@@ -1,7 +1,29 @@
-<h2>Crear Grupo</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Crear</button>
-</form>
-<a href="{% url 'dashboard_student' %}">Volver al panel</a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear Grupo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
+    <h2 class="text-2xl font-bold text-indigo-600 mb-6">Crear Grupo</h2>
+
+    <form method="post" class="space-y-4 text-left">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+        Crear
+      </button>
+    </form>
+
+    <p class="mt-6">
+      <a href="{% url 'dashboard_student' %}" class="text-sm text-gray-600 hover:text-indigo-600 transition">
+        ← Volver al panel
+      </a>
+    </p>
+  </div>
+
+</body>
+</html>

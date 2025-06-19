@@ -1,7 +1,28 @@
-<h2>Registro de Estudiante</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Registrar</button>
-</form>
-<a href="{% url 'login_student' %}">Ya tienes cuenta? Inicia sesión</a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Estudiante</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-6 text-center text-indigo-600">Registro de Estudiante</h2>
+    
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
+        Registrar
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-sm text-gray-600">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'login_student' %}" class="text-indigo-600 hover:underline">Inicia sesión</a>
+    </p>
+  </div>
+
+</body>
+</html>
