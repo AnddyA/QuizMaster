@@ -1,0 +1,14 @@
+<h2>Crear nueva pregunta</h2>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ q_form.as_p }}
+
+  <h3>Opciones (4)</h3>
+  {{ formset.management_form }}
+  {% for form in formset %}
+    {{ form.as_p }}
+  {% endfor %}
+
+  <button type="submit">Guardar</button>
+</form>
+<a href="{% url 'dashboard_student' %}">Volver</a>

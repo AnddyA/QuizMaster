@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Group
+from .models import *
 
 class StudentRegisterForm(forms.ModelForm):
     class Meta:
@@ -25,3 +25,13 @@ class CreateGroupForm(forms.ModelForm):
 
 class JoinGroupForm(forms.Form):
     group_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Nombre del grupo'}))
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['statement', 'image', 'category']
+
+class OptionForm(forms.ModelForm):
+    class Meta:
+        model = Option
+        fields = ['text', 'is_correct']

@@ -28,7 +28,7 @@ class Question(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     statement = models.TextField()
     image = models.ImageField(upload_to='questions/', blank=True, null=True)
-    
+
     def __str__(self):
         return self.statement
 

@@ -1,3 +1,4 @@
+from django.forms import modelformset_factory
 from django.shortcuts import render, redirect
 from .forms import *
 from .models import *
@@ -229,4 +230,39 @@ def quiz_result(request):
         'group': group_name,
         'score': score,
         'time_taken': time_taken
+    })
+
+def create_question(request):
+    OptionFormSet = modelformset_factory(Option, form=OptionForm, extra=4, max_num=4, validate_max=True)
+
+    if request.method == 'POST':
+        q_form = QuestionForm(request.POST, request.FILES)
+        formset = OptionFormSet(request.POST)
+
+        if q_form.is_valid() and formset.is_valid():
+            question = q_form.save()
+
+            correct_count = 0
+            for form in formset:
+                option = form.save(commit=False)
+                option.question = question
+                option.save()
+                if option.is_correct:
+                    correct_count += 1
+
+            if correct_count != 1:
+                question.delete()
+                messages.error(request, "Debe marcar exactamente una opción como correcta.")
+                return redirect('create_question')
+
+            messages.success(request, "Pregunta y opciones guardadas exitosamente.")
+            return redirect('dashboard_student')  # o dashboard_admin si lo usas
+
+    else:
+        q_form = QuestionForm()
+        formset = OptionFormSet(queryset=Option.objects.none())
+
+    return render(request, 'create_question.html', {
+        'q_form': q_form,
+        'formset': formset
     })
