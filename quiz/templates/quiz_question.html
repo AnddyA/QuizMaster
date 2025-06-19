@@ -1,0 +1,16 @@
+<h3>{{ category }} - Pregunta {{ current }} de {{ total }}</h3>
+<p>{{ question.statement }}</p>
+{% if question.image %}
+  <img src="{{ question.image.url }}" alt="Imagen de la pregunta" width="200">
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {% for option in options %}
+    <div>
+      <input type="radio" name="option" value="{{ option.id }}" required>
+      {{ option.text }}
+    </div>
+  {% endfor %}
+  <button type="submit">Siguiente</button>
+</form>

@@ -1,0 +1,7 @@
+<h2>Crear Grupo</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Crear</button>
+</form>
+<a href="{% url 'dashboard_student' %}">Volver al panel</a>

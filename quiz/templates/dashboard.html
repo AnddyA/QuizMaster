@@ -1,0 +1,18 @@
+<h2>Bienvenido {{ student.first_name }}</h2>
+
+{% if student.group_set.all %}
+  {% with group=student.group_set.first %}
+    <p>Tu grupo: {{ group.name }}</p>
+    <a href="{% url 'start_quiz' %}">Iniciar quiz</a>
+    <form action="{% url 'leave_group' %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Salir del grupo</button>
+    </form>
+  {% endwith %}
+{% else %}
+  <p>No perteneces a ningún grupo.</p>
+  <a href="{% url 'create_group' %}">Crear un grupo</a> |
+  <a href="{% url 'join_group' %}">Unirse a grupo existente</a>
+{% endif %}
+
+<a href="{% url 'logout_student' %}">Cerrar sesión</a>
