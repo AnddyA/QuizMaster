@@ -35,3 +35,13 @@ class OptionForm(forms.ModelForm):
     class Meta:
         model = Option
         fields = ['text', 'is_correct']
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['statement', 'image', 'category']
+
+class OptionForm(forms.ModelForm):
+    class Meta:
+        model = Option
+        fields = ['text', 'is_correct']

@@ -3,9 +3,9 @@ from . import views
 
 urlpatterns = [
     path('registro/', views.register_student, name='register_student'),
-    path('login/', views.login_student, name='login_student'),
+    path('', views.login_student, name='login_student'),
     path('logout/', views.logout_student, name='logout_student'),
-    path('', views.dashboard_student, name='dashboard_student'),  # Provisional
+    path('dashboard/', views.dashboard_student, name='dashboard_student'),  # Provisional
     path('grupo/crear/', views.create_group, name='create_group'),
     path('grupo/unirse/', views.join_group, name='join_group'),
     path('grupo/salir/', views.leave_group, name='leave_group'),

@@ -41,6 +41,7 @@ def logout_student(request):
     request.session.flush()
     return redirect('login_student')
 
+
 def dashboard_student(request):
     student_id = request.session.get('student_id')
     if not student_id:
@@ -266,3 +267,5 @@ def create_question(request):
         'q_form': q_form,
         'formset': formset
     })
+
+

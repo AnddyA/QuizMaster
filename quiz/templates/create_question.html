@@ -1,14 +1,43 @@
-<h2>Crear nueva pregunta</h2>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ q_form.as_p }}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear nueva pregunta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-  <h3>Opciones (4)</h3>
-  {{ formset.management_form }}
-  {% for form in formset %}
-    {{ form.as_p }}
-  {% endfor %}
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-2xl">
+    <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">Crear Nueva Pregunta</h2>
 
-  <button type="submit">Guardar</button>
-</form>
-<a href="{% url 'dashboard_student' %}">Volver</a>
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      <div class="space-y-4">
+        {{ q_form.as_p }}
+      </div>
+
+      <div class="border-t pt-4">
+        <h3 class="text-lg font-semibold text-gray-700 mb-2">Opciones (4)</h3>
+        {{ formset.management_form }}
+        <div class="grid gap-4">
+          {% for form in formset %}
+            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+              {{ form.as_p }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-6">
+        <a href="{% url 'dashboard_student' %}" class="text-sm text-gray-600 hover:text-indigo-600 transition">
+          ← Volver
+        </a>
+        <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

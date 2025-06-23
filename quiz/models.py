@@ -27,10 +27,16 @@ class Category(models.Model):
 class Question(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     statement = models.TextField()
-    image = models.ImageField(upload_to='questions/', blank=True, null=True)
+    image = models.ImageField(upload_to='preguntas/', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.image:
+            self.image = 'preguntas/default.png'  # Asegúrate de que esta imagen exista
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.statement
+
 
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
