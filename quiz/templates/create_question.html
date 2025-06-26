@@ -1,43 +1,52 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Crear nueva pregunta</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-
-  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-2xl">
-    <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">Crear Nueva Pregunta</h2>
+{% extends 'base.html' %}
+{% block title %}Crear Pregunta{% endblock %}
+{% block content %}
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h2 class="text-2xl font-bold text-indigo-600 mb-6">Crear Nueva Pregunta</h2>
 
     <form method="post" enctype="multipart/form-data" class="space-y-6">
       {% csrf_token %}
-      <div class="space-y-4">
+
+      <div class="space-y-2">
+        <label class="block text-gray-700 font-medium">Categoría y Enunciado</label>
         {{ q_form.as_p }}
       </div>
 
-      <div class="border-t pt-4">
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">Opciones (4)</h3>
+      <div class="space-y-2">
+        <label class="block text-gray-700 font-medium">Opciones de Respuesta</label>
         {{ formset.management_form }}
-        <div class="grid gap-4">
-          {% for form in formset %}
-            <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
-              {{ form.as_p }}
+        {% for form in formset %}
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-lg bg-gray-50">
+            {{ form.as_p }}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="pt-4 flex gap-4">
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-6 rounded-lg transition">
+          Guardar Pregunta
+        </button>
+        <a href="{% url 'dashboard_student' %}" class="text-gray-600 hover:text-indigo-600 transition">
+          Cancelar
+        </a>
+      </div>
+
+      {% if messages %}
+        <div class="pt-4">
+          {% for message in messages %}
+            <div class="p-3 rounded text-sm font-medium
+                        {% if message.tags == 'error' %}
+                          bg-red-100 text-red-700
+                        {% elif message.tags == 'success' %}
+                          bg-green-100 text-green-700
+                        {% else %}
+                          bg-blue-100 text-blue-700
+                        {% endif %}">
+              {{ message }}
             </div>
           {% endfor %}
         </div>
-      </div>
-
-      <div class="flex justify-between items-center pt-6">
-        <a href="{% url 'dashboard_student' %}" class="text-sm text-gray-600 hover:text-indigo-600 transition">
-          ← Volver
-        </a>
-        <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
-          Guardar
-        </button>
-      </div>
+      {% endif %}
     </form>
   </div>
-
-</body>
-</html>
+{% endblock %}

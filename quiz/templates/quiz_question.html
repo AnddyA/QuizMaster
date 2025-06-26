@@ -1,16 +1,70 @@
-<h3>{{ category }} - Pregunta {{ current }} de {{ total }}</h3>
-<p>{{ question.statement }}</p>
-{% if question.image %}
-  <img src="{{ question.image.url }}" alt="Imagen de la pregunta" width="200">
-{% endif %}
+{% extends 'base.html' %}
+{% block title %}Pregunta {{ current }}{% endblock %}
+{% block content %}
 
-<form method="post">
-  {% csrf_token %}
-  {% for option in options %}
-    <div>
-      <input type="radio" name="option" value="{{ option.id }}" required>
-      {{ option.text }}
-    </div>
-  {% endfor %}
-  <button type="submit">Siguiente</button>
-</form>
+<div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-4">
+  <div id="progressBar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+</div>
+<p></p>
+
+<div class="relative">
+  
+  <!-- Temporizador -->
+  <div id="timer" class="absolute right-0 top-0 bg-indigo-100 text-indigo-800 text-sm font-semibold px-4 py-2 rounded-bl-xl shadow">
+    Tiempo total: <span id="totalTime">00:00</span><br>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow mt-12">
+    <h2 class="text-xl font-semibold text-indigo-600 mb-4">
+      {{ category }} - Pregunta {{ current }} de {{ total }}
+    </h2>
+
+    <p class="text-lg font-medium mb-4">{{ question.statement }}</p>
+
+    {% if question.image %}
+      <div class="mb-4">
+        <img src="{{ question.image.url }}" alt="Imagen de la pregunta" class="w-full max-w-xs mx-auto rounded-lg shadow">
+      </div>
+    {% endif %}
+
+    <form method="post" id="quizForm" class="space-y-4">
+      {% csrf_token %}
+      {% for option in options %}
+        <label class="block bg-gray-100 p-3 rounded-lg hover:bg-indigo-100 transition cursor-pointer">
+          <input type="radio" name="option" value="{{ option.id }}" required class="mr-2">
+          {{ option.text }}
+        </label>
+      {% endfor %}
+
+      <button type="submit" class="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition">
+        Siguiente
+      </button>
+    </form>
+  </div>
+  
+</div>
+
+
+<script>
+  const currentQuestion = {{ current }};
+  const totalQuestions = {{ total }};
+  const percent = Math.round((currentQuestion / totalQuestions) * 100);
+  document.getElementById("progressBar").style.width = percent + "%";
+
+  // Tiempo total (usando localStorage)
+  if (!localStorage.getItem('quizStart')) {
+    localStorage.setItem('quizStart', Date.now());
+  }
+
+  function updateTotalTime() {
+    const start = parseInt(localStorage.getItem('quizStart'));
+    const now = Date.now();
+    const elapsed = Math.floor((now - start) / 1000);
+    const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const sec = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('totalTime').textContent = `${min}:${sec}`;
+  }
+  setInterval(updateTotalTime, 1000);
+
+</script>
+{% endblock %}
+

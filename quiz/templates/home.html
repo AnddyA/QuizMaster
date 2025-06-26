@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>QuizMaster - Bienvenido</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="{% static 'img/icon.jpg' %}" type="image/x-icon">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen">
+
+  <div class="text-center px-6">
+    <h1 class="text-4xl md:text-6xl font-bold text-indigo-600 mb-4">QuizMaster</h1>
+    <p class="text-lg md:text-xl text-gray-600 mb-8">
+      Plataforma de evaluación interactiva por grupos<br>
+      ¡Aprende, compite y destaca!
+    </p>
+    <a href="{% url 'login_student' %}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-medium py-3 px-6 rounded-xl transition">
+      Iniciar Sesión
+    </a>
+
+    <div class="mt-8 text-sm text-gray-400">
+      © {{ now|date:"Y" }} QuizMaster. Todos los derechos reservados.
+    </div>
+  </div>
+
+</body>
+</html>

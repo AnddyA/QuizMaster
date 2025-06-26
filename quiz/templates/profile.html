@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Perfil{% endblock %}
+{% block content %}
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h2 class="text-2xl font-bold text-indigo-600 mb-4">Perfil del Estudiante</h2>
+    <p class="mb-2"><strong>Cédula:</strong> {{ student.dni }}</p>
+    <p class="mb-2"><strong>Nombre:</strong> {{ student.first_name }}</p>
+    <p class="mb-2"><strong>Apellido:</strong> {{ student.last_name }}</p>
+    <p><strong>Grupo:</strong> {% if student.group_set.first %}{{ student.group_set.first.name }}{% else %}Sin grupo{% endif %}</p>
+  </div>
+{% endblock %}

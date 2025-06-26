@@ -6,6 +6,12 @@ from django.contrib import messages
 from django.utils import timezone
 import random
 from datetime import datetime
+from django.utils.timezone import now
+from django.utils.timesince import timesince
+
+def home(request):
+    return render(request, 'home.html', {'now': now()})
+
 
 def register_student(request):
     if request.method == 'POST':
@@ -117,12 +123,12 @@ def leave_group(request):
     if groups.exists():
         group = groups.first()
         group.members.remove(student)
-        if group.members.count() == 0:
-            group_name = group.name
-            group.delete()
-            messages.success(request, f'Saliste del grupo y como estaba vacío, el grupo "{group_name}" fue eliminado.')
-        else:
-            messages.success(request, f'Saliste del grupo "{group.name}".')
+        #if group.members.count() == 0:
+        #    group_name = group.name
+        #    group.delete()
+        #    messages.success(request, f'Saliste del grupo y como estaba vacío, el grupo "{group_name}" fue eliminado.')
+        #else:
+        messages.success(request, f'Saliste del grupo "{group.name}".')
     else:
         messages.warning(request, 'No perteneces a ningún grupo.')
 
@@ -168,6 +174,9 @@ def quiz_question(request):
     quiz_id = request.session.get('quiz_id')
     question_ids = request.session.get('question_ids', [])
     index = request.session.get('current_index', 0)
+    
+    student_id = request.session.get('student_id')
+    student = Student.objects.get(id=student_id)
 
     if quiz_id is None or index >= len(question_ids):
         return redirect('quiz_result')
@@ -196,13 +205,17 @@ def quiz_question(request):
         'options': options,
         'category': question.category.name,
         'current': index + 1,
-        'total': len(question_ids)
+        'total': len(question_ids),
+        'student': student
     })
 
 
 
 def quiz_result(request):
     quiz_id = request.session.get('quiz_id')
+    student_id = request.session.get('student_id')
+    student = Student.objects.get(id=student_id)
+
     if quiz_id is None:
         return redirect('dashboard_student')
 
@@ -230,7 +243,8 @@ def quiz_result(request):
     return render(request, 'quiz_result.html', {
         'group': group_name,
         'score': score,
-        'time_taken': time_taken
+        'time_taken': time_taken,
+        'student': student
     })
 
 def create_question(request):
@@ -269,3 +283,90 @@ def create_question(request):
     })
 
 
+def profile(request):
+    student_id = request.session.get('student_id')
+    if not student_id:
+        return redirect('login_student')
+
+    student = Student.objects.get(id=student_id)
+
+    return render(request, 'profile.html', {
+        'student': student
+    })
+
+def group_history(request):
+    student_id = request.session.get('student_id')
+    if not student_id:
+        return redirect('login_student')
+
+    student = Student.objects.get(id=student_id)
+    group = student.group_set.first()
+
+    if not group:
+        messages.error(request, "No perteneces a ningún grupo.")
+        return redirect('dashboard_student')
+
+    quizzes = Quiz.objects.filter(group=group).order_by('-end_time')
+
+    # Calculamos la duración en formato mm:ss
+    for quiz in quizzes:
+        if quiz.start_time and quiz.end_time:
+            delta = quiz.end_time - quiz.start_time
+            quiz.duration_str = f"{delta.seconds // 60:02d}:{delta.seconds % 60:02d}"
+        else:
+            quiz.duration_str = "N/D"
+
+    return render(request, 'group_history.html', {
+        'group': group,
+        'quizzes': quizzes,
+        'student': student
+    })
+
+from django.db.models import Max
+
+def group_rankings(request):
+    # Obtener el ID del quiz con puntaje máximo por grupo
+    best_quiz_ids = (
+        Quiz.objects
+        .values('group')
+        .annotate(max_score=Max('score'))
+        .filter(score__isnull=False)
+    )
+
+    quizzes = []
+    for item in best_quiz_ids:
+        best = Quiz.objects.filter(group_id=item['group'], score=item['max_score']).first()
+        if best:
+            quizzes.append(best)
+    
+    #best_quiz_ids = (
+    #    Quiz.objects
+    #    .values('group')
+    #    .annotate(max_score_id=Max('id'))
+    #    .values_list('max_score_id', flat=True)
+    #)
+
+    # Traer solo esos quizzes
+    #quizzes = Quiz.objects.filter(id__in=best_quiz_ids).select_related('group').order_by('-score')
+
+    data = []
+    for quiz in quizzes:
+        if quiz.start_time and quiz.end_time:
+            delta = quiz.end_time - quiz.start_time
+            duration_str = f"{delta.seconds // 60:02d}:{delta.seconds % 60:02d}"
+        else:
+            duration_str = "N/D"
+
+        members = quiz.group.members.all()
+        member_names = [f"{s.first_name} {s.last_name}" for s in members]
+
+        data.append({
+            'group': quiz.group.name,
+            'members': member_names,
+            'score': quiz.score,
+            'duration': duration_str
+        })
+
+    return render(request, 'group_rankings.html', {
+        'rankings': data
+    })

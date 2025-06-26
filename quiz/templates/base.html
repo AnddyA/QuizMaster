@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}QuizMaster{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="{% static 'img/icon.png' %}" type="image/x-icon">
+  <script defer src="https://kit.fontawesome.com/33dda385d1.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+
+  <!-- Barra de navegación -->
+  <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <a href ="{% url 'dashboard_student' %}"><h1 class="text-xl font-bold text-indigo-600">QuizMaster</h1></a>
+
+      {% if student %}
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">
+            {{ student.first_name|first }}{{ student.last_name|first }}
+          </div>
+           <a href="{% url 'profile' %}"><span class="font-medium">{{ student.first_name }} {{ student.last_name }}</span></a>
+        </div>
+        <a href="{% url 'home' %}" class="fa-solid fa-arrow-right-from-bracket text-sm text-red-500 hover:underline"></a>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="max-w-3xl mx-auto px-4 py-10">
+    {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for message in messages %}
+          <div class="p-3 rounded text-sm font-medium
+                      {% if message.tags == 'error' %}
+                        bg-red-100 text-red-700
+                      {% elif message.tags == 'success' %}
+                        bg-green-100 text-green-700
+                      {% else %}
+                        bg-blue-100 text-blue-700
+                      {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

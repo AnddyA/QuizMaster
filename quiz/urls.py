@@ -2,8 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('', views.home, name='home'),
     path('registro/', views.register_student, name='register_student'),
-    path('', views.login_student, name='login_student'),
+    path('login/', views.login_student, name='login_student'),
     path('logout/', views.logout_student, name='logout_student'),
     path('dashboard/', views.dashboard_student, name='dashboard_student'),  # Provisional
     path('grupo/crear/', views.create_group, name='create_group'),
@@ -13,5 +14,8 @@ urlpatterns = [
     path('quiz/pregunta/', views.quiz_question, name='quiz_question'),
     path('quiz/resultado/', views.quiz_result, name='quiz_result'),
     path('pregunta/crear/', views.create_question, name='create_question'),
+    path('perfil/', views.profile, name='profile'),
+    path('grupohistorial/', views.group_history, name='group_history'),
+    path('rankings/', views.group_rankings, name='group_rankings'),
 
 ]
