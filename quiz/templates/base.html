@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}QuizMaster{% endblock %}</title>
@@ -12,36 +13,70 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
+      background-color: #222222;
+    }
+
+    .bg-grisillo {
+      background-color: #2c343f;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+
+    }
+
+    #canvas {
+      background-color: #2c343f;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800">
+
+<body class="min-h-screen text-gray-800 relative">
+  <canvas id="canvas" class="fixed top-0 left-0 z-0"></canvas>
 
   <!-- Barra de navegación -->
-  <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+  <header class="bg-grisillo shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <a href ="{% url 'dashboard_student' %}"><h1 class="text-xl font-bold text-indigo-600">QuizMaster</h1></a>
+      <a href="{% url 'dashboard_student' %}">
+        <h1 class="text-xl font-bold text-white">QuizMaster</h1>
+      </a>
 
+      <div class="flex items-center gap-4">
+        <a href="{% url 'dashboard_student' %}"
+          class="text-white hover:text-indigo-400 transition-colors duration-200">Panel Estudiante</a>
+        <a href="{% url 'group_rankings' %}"
+          class="text-white hover:text-indigo-400 transition-colors duration-200">Ranking de Grupos</a>
+      </div>
+      
       {% if student %}
+
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
           <div class="w-9 h-9 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">
             {{ student.first_name|first }}{{ student.last_name|first }}
           </div>
-           <a href="{% url 'profile' %}"><span class="font-medium">{{ student.first_name }} {{ student.last_name }}</span></a>
+          <a href="{% url 'profile' %}"><span class="text-white hover:text-indigo-400 font-medium">{{ student.first_name }} {{ student.last_name }}</span></a>
         </div>
-        <a href="{% url 'home' %}" class="fa-solid fa-arrow-right-from-bracket text-sm text-red-500 hover:underline"></a>
+        <a href="{% url 'home' %}"
+          class="fa-solid fa-arrow-right-from-bracket text-sm text-red-500 hover:underline"></a>
       </div>
       {% endif %}
     </div>
   </header>
 
   <!-- Contenido principal -->
-  <main class="max-w-3xl mx-auto px-4 py-10">
+  <main class="max-w-3xl mx-auto px-4 py-10 relative z-10">
+  <!--
     {% if messages %}
-      <div class="space-y-2 mb-6">
-        {% for message in messages %}
-          <div class="p-3 rounded text-sm font-medium
+    <div class="space-y-2 mb-6">
+      {% for message in messages %}
+      <div class="p-3 rounded text-sm font-medium
                       {% if message.tags == 'error' %}
                         bg-red-100 text-red-700
                       {% elif message.tags == 'success' %}
@@ -49,14 +84,176 @@
                       {% else %}
                         bg-blue-100 text-blue-700
                       {% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
+        {{ message }}
       </div>
+      {% endfor %}
+    </div>
     {% endif %}
+  -->
 
     {% block content %}{% endblock %}
   </main>
 
 </body>
+
 </html>
+<script>
+var c = document.getElementById("canvas");
+var ctx = c.getContext("2d");
+
+function resize() {
+    var box = c.getBoundingClientRect();
+    c.width = box.width;
+    c.height = box.height;
+}
+
+var light = {
+    x: 160,
+    y: 200
+}
+
+var colors = ["#f5c156", "#e6616b", "#5cd3ad"];
+
+function drawLight() {
+    ctx.beginPath();
+    ctx.arc(light.x, light.y, 1000, 0, 2 * Math.PI);
+    var gradient = ctx.createRadialGradient(light.x, light.y, 0, light.x, light.y, 1000);
+    gradient.addColorStop(0, "#3b4654");
+    gradient.addColorStop(1, "#2c343f");
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(light.x, light.y, 20, 0, 2 * Math.PI);
+    gradient = ctx.createRadialGradient(light.x, light.y, 0, light.x, light.y, 5);
+    gradient.addColorStop(0, "#fff");
+    gradient.addColorStop(1, "#3b4654");
+    ctx.fillStyle = gradient;
+    ctx.fill();
+}
+
+function Box() {
+    this.half_size = Math.floor((Math.random() * 50) + 1);
+    this.x = Math.floor((Math.random() * c.width) + 1);
+    this.y = Math.floor((Math.random() * c.height) + 1);
+    this.r = Math.random() * Math.PI;
+    this.shadow_length = 2000;
+    this.color = colors[Math.floor((Math.random() * colors.length))];
+
+    this.getDots = function() {
+        var full = (Math.PI * 2) / 4;
+        var p1 = {
+            x: this.x + this.half_size * Math.sin(this.r),
+            y: this.y + this.half_size * Math.cos(this.r)
+        };
+        var p2 = {
+            x: this.x + this.half_size * Math.sin(this.r + full),
+            y: this.y + this.half_size * Math.cos(this.r + full)
+        };
+        var p3 = {
+            x: this.x + this.half_size * Math.sin(this.r + full * 2),
+            y: this.y + this.half_size * Math.cos(this.r + full * 2)
+        };
+        var p4 = {
+            x: this.x + this.half_size * Math.sin(this.r + full * 3),
+            y: this.y + this.half_size * Math.cos(this.r + full * 3)
+        };
+        return { p1, p2, p3, p4 };
+    }
+    this.rotate = function() {
+        var speed = (60 - this.half_size) / 20;
+        this.r += speed * 0.002;
+        this.x += speed;
+        this.y += speed;
+    }
+    this.draw = function() {
+        var dots = this.getDots();
+        ctx.beginPath();
+        ctx.moveTo(dots.p1.x, dots.p1.y);
+        ctx.lineTo(dots.p2.x, dots.p2.y);
+        ctx.lineTo(dots.p3.x, dots.p3.y);
+        ctx.lineTo(dots.p4.x, dots.p4.y);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+
+        if (this.y - this.half_size > c.height) {
+            this.y -= c.height + 100;
+        }
+        if (this.x - this.half_size > c.width) {
+            this.x -= c.width + 100;
+        }
+    }
+    this.drawShadow = function() {
+        var dots = this.getDots();
+        var points = [];
+
+        for (let dot in dots) {
+            var angle = Math.atan2(light.y - dots[dot].y, light.x - dots[dot].x);
+            var endX = dots[dot].x + this.shadow_length * Math.sin(-angle - Math.PI / 2);
+            var endY = dots[dot].y + this.shadow_length * Math.cos(-angle - Math.PI / 2);
+            points.push({
+                endX: endX,
+                endY: endY,
+                startX: dots[dot].x,
+                startY: dots[dot].y
+            });
+        }
+
+        for (let i = points.length - 1; i >= 0; i--) {
+            var n = i == 3 ? 0 : i + 1;
+            ctx.beginPath();
+            ctx.moveTo(points[i].startX, points[i].startY);
+            ctx.lineTo(points[n].startX, points[n].startY);
+            ctx.lineTo(points[n].endX, points[n].endY);
+            ctx.lineTo(points[i].endX, points[i].endY);
+            ctx.fillStyle = "#2c343f";
+            ctx.fill();
+        }
+    }
+}
+
+var boxes = [];
+
+function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    drawLight();
+
+    for (var i = 0; i < boxes.length; i++) {
+        boxes[i].rotate();
+        boxes[i].drawShadow();
+    }
+    for (var i = 0; i < boxes.length; i++) {
+        collisionDetection(i);
+        boxes[i].draw();
+    }
+    requestAnimationFrame(draw);
+}
+
+resize();
+draw();
+
+while (boxes.length < 14) {
+    boxes.push(new Box());
+}
+
+window.onresize = resize;
+
+c.onmousemove = function(e) {
+    light.x = e.offsetX ?? e.layerX;
+    light.y = e.offsetY ?? e.layerY;
+}
+
+function collisionDetection(b) {
+    for (var i = boxes.length - 1; i >= 0; i--) {
+        if(i != b) {
+            var dx = (boxes[b].x + boxes[b].half_size) - (boxes[i].x + boxes[i].half_size);
+            var dy = (boxes[b].y + boxes[b].half_size) - (boxes[i].y + boxes[i].half_size);
+            var d = Math.sqrt(dx * dx + dy * dy);
+            if (d < boxes[b].half_size + boxes[i].half_size) {
+                boxes[b].half_size = boxes[b].half_size > 1 ? boxes[b].half_size -= 1 : 1;
+                boxes[i].half_size = boxes[i].half_size > 1 ? boxes[i].half_size -= 1 : 1;
+            }
+        }
+    }
+}
+</script>

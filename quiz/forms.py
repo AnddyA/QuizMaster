@@ -18,13 +18,15 @@ class StudentLoginForm(forms.Form):
 class CreateGroupForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = ['name']
+        fields = ['id','name']
         widgets = {
+            'id': forms.TextInput(attrs={'placeholder': 'ID del grupo (5 caracteres)'}),
             'name': forms.TextInput(attrs={'placeholder': 'Nombre único del grupo'})
         }
 
 class JoinGroupForm(forms.Form):
-    group_name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Nombre del grupo'}))
+
+    group_id = forms.CharField(max_length=5, widget=forms.TextInput(attrs={'placeholder': 'ID del grupo'}))    
 
 class QuestionForm(forms.ModelForm):
     class Meta:

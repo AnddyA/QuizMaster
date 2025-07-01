@@ -12,6 +12,7 @@
   <!-- Temporizador -->
   <div id="timer" class="absolute right-0 top-0 bg-indigo-100 text-indigo-800 text-sm font-semibold px-4 py-2 rounded-bl-xl shadow">
     Tiempo total: <span id="totalTime">00:00</span><br>
+    Tiempo restante: <span id="countdown">20</span>s
   </div>
   <div class="bg-white p-6 rounded-xl shadow mt-12">
     <h2 class="text-xl font-semibold text-indigo-600 mb-4">
@@ -55,15 +56,33 @@
     localStorage.setItem('quizStart', Date.now());
   }
 
+  // Esta función actualiza el tiempo en pantalla
   function updateTotalTime() {
     const start = parseInt(localStorage.getItem('quizStart'));
+    if (!start) return; // si no hay tiempo guardado, salir
+
     const now = Date.now();
     const elapsed = Math.floor((now - start) / 1000);
     const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
     const sec = String(elapsed % 60).padStart(2, '0');
     document.getElementById('totalTime').textContent = `${min}:${sec}`;
   }
+
   setInterval(updateTotalTime, 1000);
+
+  // Per-question timer
+  let countdown = 20;
+  const countdownElement = document.getElementById('countdown');
+  const form = document.getElementById('quizForm');
+
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    countdownElement.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(countdownInterval);
+      form.submit();
+    }
+  }, 1000);
 
 </script>
 {% endblock %}

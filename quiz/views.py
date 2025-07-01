@@ -10,29 +10,21 @@ from django.utils.timezone import now
 from django.utils.timesince import timesince
 
 def home(request):
-    return render(request, 'home.html', {'now': now()})
-
-
-def register_student(request):
     if request.method == 'POST':
-        form = StudentRegisterForm(request.POST)
-        if form.is_valid():
-            dni = form.cleaned_data['dni']
+        formL = StudentLoginForm(request.POST)
+        formR = StudentRegisterForm(request.POST)
+
+        if formR.is_valid():
+            dni = formR.cleaned_data['dni']
             if Student.objects.filter(dni=dni).exists():
                 messages.error(request, 'Ya existe un estudiante con esa cédula.')
             else:
-                form.save()
+                formR.save()
                 messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
                 return redirect('login_student')
-    else:
-        form = StudentRegisterForm()
-    return render(request, 'register.html', {'form': form})
-
-def login_student(request):
-    if request.method == 'POST':
-        form = StudentLoginForm(request.POST)
-        if form.is_valid():
-            dni = form.cleaned_data['dni']
+            
+        elif formL.is_valid():
+            dni = formL.cleaned_data['dni']
             try:
                 student = Student.objects.get(dni=dni)
                 request.session['student_id'] = student.id  # Inicia sesión
@@ -40,18 +32,51 @@ def login_student(request):
             except Student.DoesNotExist:
                 messages.error(request, 'Cédula no encontrada.')
     else:
-        form = StudentLoginForm()
-    return render(request, 'login.html', {'form': form})
+        formL = StudentLoginForm()
+        formR = StudentRegisterForm()
+    
+    return render(request, 'home.html', {'now': now(), 'formL': formL, 'formR': formR})
 
-def logout_student(request):
-    request.session.flush()
-    return redirect('login_student')
+
+#def register_student(request):
+#    if request.method == 'POST':
+#        formR = StudentRegisterForm(request.POST)
+#        if formR.is_valid():
+#            dni = formR.cleaned_data['dni']
+#            if Student.objects.filter(dni=dni).exists():
+#                messages.error(request, 'Ya existe un estudiante con esa cédula.')
+#            else:
+#                formR.save()
+#                messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+#                return redirect('login_student')
+#    else:
+#        formR = StudentRegisterForm()
+#    return render(request, 'register.html', {'form': formR})
+
+#def login_student(request):
+#    if request.method == 'POST':
+#        form = StudentLoginForm(request.POST)
+#        if form.is_valid():
+#            dni = form.cleaned_data['dni']
+#            try:
+#                student = Student.objects.get(dni=dni)
+#                request.session['student_id'] = student.id  # Inicia sesión
+#                return redirect('dashboard_student')
+#            except Student.DoesNotExist:
+#                messages.error(request, 'Cédula no encontrada.')
+#    else:
+#        form = StudentLoginForm()
+#    return render(request, 'login.html', {'form': form})
+
+#def logout_student(request):
+#    request.session.flush()
+#    return redirect('home')
 
 
 def dashboard_student(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
     student = Student.objects.get(id=student_id)
     return render(request, 'dashboard.html', {'student': student})
@@ -60,7 +85,7 @@ def dashboard_student(request):
 def create_group(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
     student = Student.objects.get(id=student_id)
     
@@ -78,7 +103,7 @@ def create_group(request):
     else:
         form = CreateGroupForm()
     
-    return render(request, 'create_group.html', {'form': form})
+    return render(request, 'create_group.html', {'form': form, 'student': student})
 
 
 def join_group(request):
@@ -95,9 +120,10 @@ def join_group(request):
     if request.method == 'POST':
         form = JoinGroupForm(request.POST)
         if form.is_valid():
-            group_name = form.cleaned_data['group_name']
+            group_id = form.cleaned_data['group_id']
+            
             try:
-                group = Group.objects.get(name=group_name)
+                group = Group.objects.get(id=group_id)
                 if group.members.count() >= 3:
                     messages.error(request, 'El grupo ya tiene 3 miembros.')
                 else:
@@ -109,7 +135,7 @@ def join_group(request):
     else:
         form = JoinGroupForm()
 
-    return render(request, 'join_group.html', {'form': form})
+    return render(request, 'join_group.html', {'form': form, 'student': student})
 
 
 def leave_group(request):
@@ -174,7 +200,7 @@ def quiz_question(request):
     quiz_id = request.session.get('quiz_id')
     question_ids = request.session.get('question_ids', [])
     index = request.session.get('current_index', 0)
-    
+
     student_id = request.session.get('student_id')
     student = Student.objects.get(id=student_id)
 
@@ -184,18 +210,30 @@ def quiz_question(request):
     question = Question.objects.get(id=question_ids[index])
     options = question.options.all()
 
+    points_per_question = 1000 / len(question_ids)
+
     if request.method == 'POST':
-        selected_option_id = int(request.POST.get('option'))
-        selected_option = Option.objects.get(id=selected_option_id)
+        selected_option_id = request.POST.get('option')
 
-        QuizAnswer.objects.create(
-            quiz_id=quiz_id,
-            question=question,
-            selected_option=selected_option
-        )
+        if selected_option_id:
+            selected_option = Option.objects.get(id=selected_option_id)
 
-        if selected_option.is_correct:
-            request.session['score'] += 1000 // len(question_ids)
+            QuizAnswer.objects.create(
+                quiz_id=quiz_id,
+                question=question,
+                selected_option=selected_option
+            )
+
+            if selected_option.is_correct:
+                request.session['score'] += points_per_question
+        else:
+            # no seleccionó nada, incorrecta
+            QuizAnswer.objects.create(
+                quiz_id=quiz_id,
+                question=question,
+                selected_option=None
+            )
+            # no suma puntos
 
         request.session['current_index'] += 1
         return redirect('quiz_question')
@@ -208,7 +246,6 @@ def quiz_question(request):
         'total': len(question_ids),
         'student': student
     })
-
 
 
 def quiz_result(request):
@@ -297,7 +334,7 @@ def profile(request):
 def group_history(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
     student = Student.objects.get(id=student_id)
     group = student.group_set.first()
@@ -306,7 +343,7 @@ def group_history(request):
         messages.error(request, "No perteneces a ningún grupo.")
         return redirect('dashboard_student')
 
-    quizzes = Quiz.objects.filter(group=group).order_by('-end_time')
+    quizzes = Quiz.objects.filter(group=group).order_by('-end_time')[:5]
 
     # Calculamos la duración en formato mm:ss
     for quiz in quizzes:
@@ -325,6 +362,11 @@ def group_history(request):
 from django.db.models import Max
 
 def group_rankings(request):
+    student_id = request.session.get('student_id')
+    if not student_id:
+        return redirect('home')
+    student = Student.objects.get(id=student_id)
+
     # Obtener el ID del quiz con puntaje máximo por grupo
     best_quiz_ids = (
         Quiz.objects
@@ -368,5 +410,6 @@ def group_rankings(request):
         })
 
     return render(request, 'group_rankings.html', {
-        'rankings': data
+        'rankings': data,
+        'student': student
     })

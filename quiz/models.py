@@ -9,6 +9,7 @@ class Student(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 class Group(models.Model):
+    id = models.CharField(max_length=5, primary_key=True, unique=True)
     name = models.CharField(max_length=100, unique=True)
     members = models.ManyToManyField(Student, blank=True)
 
@@ -31,7 +32,7 @@ class Question(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.image:
-            self.image = 'preguntas/default.png'  # Asegúrate de que esta imagen exista
+            self.image = 'preguntas/default.png'   # poner la subcarpeta
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -55,4 +56,4 @@ class Quiz(models.Model):
 class QuizAnswer(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.SET_NULL, null=True, blank=True)

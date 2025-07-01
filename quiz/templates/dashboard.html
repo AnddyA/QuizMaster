@@ -4,42 +4,52 @@
 <div class="flex items-center justify-center min-h-[80vh]">
   <div class="text-center p-8 rounded-xl max-w-xl w-full">
     <h2 class="text-3xl font-semibold text-indigo-600 mb-6">Bienvenid@</h2>
+    <p class="text-white mb-6">Administra tu participación en el quiz y tu grupo desde este panel.</p>
 
     {% if student.group_set.all %}
-      <p class="text-lg text-gray-700 mb-6"><strong>Grupo:</strong> {{ student.group_set.first.name }}</p>
+    <div class="mb-6 bg-indigo-50 p-4 rounded-xl text-center">
+        <p class="text-xl text-indigo-800 font-semibold">Grupo actual: {{ student.group_set.first.name }}</p>
+        <P class="text-xl text-indigo-800 font-semibold">ID: {{ student.group_set.first.id}}</p>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="{% url 'start_quiz' %}" class="w-full">
-          <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-xl">Iniciar Quiz</button>
-        </a>
-        <a href="{% url 'group_history' %}" class="w-full">
-          <button class="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-xl">Ver historial</button>
-        </a>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-      <form action="{% url 'leave_group' %}" method="post">
-          {% csrf_token %}
-          <button class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl">Salir del grupo</button>
+        <p class="text-gray-600">Miembros: {{ student.group_set.first.members.count }}</p>
+        <form action="{% url 'leave_group' %}" method="post">
+        {% csrf_token %}
+        <button class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-xl">Salir del grupo</button>
       </form>
-      </div>
-    {% else %}
-      <div class="space-y-4">
-        <a href="{% url 'create_group' %}">
-          <button class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-xl">Crear grupo</button>
-        </a>
-        <p></p>
-        <a href="{% url 'join_group' %}">
-          <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-xl">Unirse a grupo</button>
-        </a>
-      </div>
-    {% endif %}
-    <a href="{% url 'group_rankings' %}">
-        <button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-xl mt-4">
-          Ver Ranking de Grupos
-        </button>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{% url 'start_quiz' %}" class="w-full">
+        <button onclick="startQuiz()"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-xl">Iniciar Quiz</button>
       </a>
+      <a href="{% url 'group_history' %}" class="w-full">
+        <button class="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-xl">Ver historial</button>
+      </a>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+      
+    </div>
+    {% else %}
+    <div class="space-y-4">
+      <a href="{% url 'create_group' %}">
+        <button class="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-xl">Crear grupo</button>
+      </a>
+      <p></p>
+      <a href="{% url 'join_group' %}"">
+        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-xl">Unirse a grupo</button>
+      </a>
+    </div>
+    {% endif %}
   </div>
 </div>
+
+<script>
+  // Esta función reinicia el tiempo cuando se inicia el quiz
+  function startQuiz() {
+    localStorage.setItem('quizStart', Date.now()); // Guarda el tiempo actual
+    window.location.href = "{% url 'quiz_question' %}"; // Redirige al HTML del quiz
+  }
+
+</script>
+
 {% endblock %}
-
-

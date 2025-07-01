@@ -1,0 +1,53 @@
+<head>
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+</head>
+
+<body>
+
+
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+
+    <div class="triangle"></div>
+    <div class="triangle"></div>
+    <div class="triangle"></div>
+    <div class="triangle"></div>
+    <div class="triangle"></div>
+
+</body>
+
+<script>
+    function randomValues() {
+        anime({
+            targets: '.square, .circle, .triangle',
+            translateX: function () {
+                return anime.random(-500, 500);
+            },
+            translateY: function () {
+                return anime.random(-300, 300);
+            },
+            rotate: function () {
+                return anime.random(0, 360);
+            },
+            scale: function () {
+                return anime.random(.2, 2);
+            },
+            duration: 1000,
+            easing: 'easeInOutQuad',
+            complete: randomValues,
+        });
+    }
+
+    randomValues();
+</script>
