@@ -51,7 +51,7 @@ class Quiz(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    score = models.IntegerField(default=0)
+    score = models.FloatField(default=0)
 
 class QuizAnswer(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)

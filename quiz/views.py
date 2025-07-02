@@ -7,7 +7,7 @@ from django.utils import timezone
 import random
 from datetime import datetime
 from django.utils.timezone import now
-from django.utils.timesince import timesince
+from django.db.models import F, Max, Min
 
 def home(request):
     if request.method == 'POST':
@@ -21,7 +21,7 @@ def home(request):
             else:
                 formR.save()
                 messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
-                return redirect('login_student')
+                return redirect('home')
             
         elif formL.is_valid():
             dni = formL.cleaned_data['dni']
@@ -359,40 +359,36 @@ def group_history(request):
         'student': student
     })
 
-from django.db.models import Max
-
 def group_rankings(request):
     student_id = request.session.get('student_id')
     if not student_id:
         return redirect('home')
     student = Student.objects.get(id=student_id)
 
-    # Obtener el ID del quiz con puntaje máximo por grupo
-    best_quiz_ids = (
-        Quiz.objects
-        .values('group')
-        .annotate(max_score=Max('score'))
-        .filter(score__isnull=False)
+    # sacar todos los grupos que alguna vez han jugado
+    group_ids = Quiz.objects.values_list('group', flat=True).distinct()
+
+    best_quizzes = []
+
+    for gid in group_ids:
+        # para cada grupo, sacar sus quizzes ordenados primero por mayor score,
+        # y si empatan, por menor duración
+        quizzes = (
+            Quiz.objects
+            .filter(group_id=gid, score__isnull=False, end_time__isnull=False)
+            .annotate(duration=F('end_time') - F('start_time'))
+            .order_by('-score', 'duration')
+        )
+        if quizzes.exists():
+            best_quizzes.append(quizzes.first())
+
+    # ahora ordenar todos los mejores de cada grupo
+    best_quizzes.sort(
+        key=lambda q: (-q.score, (q.end_time - q.start_time).total_seconds() if q.end_time and q.start_time else float('inf'))
     )
 
-    quizzes = []
-    for item in best_quiz_ids:
-        best = Quiz.objects.filter(group_id=item['group'], score=item['max_score']).first()
-        if best:
-            quizzes.append(best)
-    
-    #best_quiz_ids = (
-    #    Quiz.objects
-    #    .values('group')
-    #    .annotate(max_score_id=Max('id'))
-    #    .values_list('max_score_id', flat=True)
-    #)
-
-    # Traer solo esos quizzes
-    #quizzes = Quiz.objects.filter(id__in=best_quiz_ids).select_related('group').order_by('-score')
-
     data = []
-    for quiz in quizzes:
+    for quiz in best_quizzes:
         if quiz.start_time and quiz.end_time:
             delta = quiz.end_time - quiz.start_time
             duration_str = f"{delta.seconds // 60:02d}:{delta.seconds % 60:02d}"
