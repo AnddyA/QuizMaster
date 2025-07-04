@@ -1,17 +1,33 @@
 from django.db import models
 
-class Student(models.Model):
+class User(models.Model):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('student', 'Student'),
+    ]
+
     dni = models.CharField(max_length=10, unique=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE_CHOICES,
+        default='student'
+    )
+    profile_pic = models.ImageField(
+        upload_to='profile/',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} ({self.role})"
+
 
 class Group(models.Model):
     id = models.CharField(max_length=5, primary_key=True, unique=True)
     name = models.CharField(max_length=100, unique=True)
-    members = models.ManyToManyField(Student, blank=True)
+    members = models.ManyToManyField(User, blank=True)
 
     def member_count(self):
         return self.members.count()

@@ -3,7 +3,7 @@ from .models import *
 
 class StudentRegisterForm(forms.ModelForm):
     class Meta:
-        model = Student
+        model = User
         fields = ['dni', 'first_name', 'last_name']
         widgets = {
             'dni': forms.TextInput(attrs={'placeholder': 'Cédula'}),
@@ -38,12 +38,8 @@ class OptionForm(forms.ModelForm):
         model = Option
         fields = ['text', 'is_correct']
 
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = ['statement', 'image', 'category']
 
-class OptionForm(forms.ModelForm):
+class ProfileForm(forms.ModelForm):
     class Meta:
-        model = Option
-        fields = ['text', 'is_correct']
+        model = User
+        fields = ['first_name', 'last_name', 'profile_pic']

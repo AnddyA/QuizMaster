@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bg-white p-6 rounded-xl shadow">
+
+
+    <h2 class="text-2xl font-bold mb-4">Administrar Grupos</h2>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="p-2 rounded text-white {% if message.tags == 'success' %}bg-green-600{% else %}bg-red-600{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <table class="min-w-full border mt-4">
+        <thead>
+            <tr>
+                <th class="border px-4 py-2">ID</th>
+                <th class="border px-4 py-2">Nombre</th>
+                <th class="border px-4 py-2">Miembros</th>
+                <th class="border px-4 py-2">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td class="border px-4 py-2">{{ group.id }}</td>
+                <td class="border px-4 py-2">{{ group.name }}</td>
+                <td class="border px-4 py-2">{{ group.member_count }}</td>
+                <td class="border px-4 py-2">
+                    <form method="post" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="rename">
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+                        <input type="text" name="new_name" placeholder="Nuevo nombre"
+                            class="border rounded text-sm px-1">
+                        <button class="bg-blue-600 text-white px-2 py-1 rounded text-sm">Renombrar</button>
+                    </form>
+                    <form method="post" class="inline ml-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+                        <button class="bg-red-600 text-white px-2 py-1 rounded text-sm"
+                            onclick="return confirm('¿Estás seguro de eliminar este grupo?')">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center py-4">No hay grupos registrados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="mt-6 text-center">
+      <a href="{% url 'dashboard_student' %}" class="text-sm text-gray-600 hover:text-indigo-600 transition">
+        ← Volver al panel
+      </a>
+    </div>
+</div>
+{% endblock %}

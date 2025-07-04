@@ -109,6 +109,45 @@
   <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div id="modal-content"></div>
   </div>
+  {% if messages %}
+  <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg px-6 py-4 text-center max-w-md w-full scale-90 opacity-0 transition">
+      {% for message in messages %}
+      <div class="text-lg font-semibold
+          {% if message.tags == 'error' %}
+            text-red-600
+          {% elif message.tags == 'success' %}
+            text-green-600
+          {% elif message.tags == 'warning' %}
+            text-yellow-600
+          {% else %}
+            text-blue-600
+          {% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const modal = document.querySelector("#message-modal div");
+      modal.classList.add("scale-100", "opacity-100");
+      setTimeout(() => {
+        modal.classList.remove("scale-100", "opacity-100");
+        setTimeout(() => {
+          document.getElementById("message-modal").remove();
+        }, 200);
+      }, 2500);
+    });
+  </script>
+  <style>
+    #message-modal div.scale-100 {
+      transform: scale(1);
+      opacity: 1;
+      transition: all 0.3s ease;
+    }
+  </style>
+  {% endif %}
 
 
 </body>
@@ -121,6 +160,7 @@
 
     <form method="post" class="space-y-4">
       {% csrf_token %}
+      <input type="hidden" name="action" value="login">
       {{ formL.as_p }}
       <button type="submit"
         class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
@@ -128,10 +168,18 @@
       </button>
     </form>
 
+
     <p class="mt-4 text-center text-sm text-gray-600">
       ¿No tienes cuenta?
       <button id="open-register" class="text-indigo-600 hover:underline">Regístrate</button>
     </p>
+  </div>
+  <!-- Modal mensajes -->
+  <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="message-content"
+      class="bg-white rounded-lg shadow-lg px-6 py-4 text-center max-w-md w-full transform scale-90 opacity-0 transition">
+      <!-- el texto dinámico irá aquí -->
+    </div>
   </div>
 </template>
 
@@ -141,25 +189,14 @@
 
     <form method="post" class="space-y-4">
       {% csrf_token %}
+      <input type="hidden" name="action" value="register">
       {{ formR.as_p }}
       <button type="submit"
         class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
         Registrar
       </button>
     </form>
-    {% if formR.non_field_errors %}
-    <div class="mt-4 text-red-600">
-      {{ formR.non_field_errors }}
-    </div>
-    {% endif %}
 
-    {% if messages %}
-    <div class="mt-4">
-      {% for message in messages %}
-      <div class="text-red-600">{{ message }}</div>
-      {% endfor %}
-    </div>
-    {% endif %}
     <p class="mt-4 text-center text-sm text-gray-600">
       ¿Ya tienes cuenta?
       <a href="{% url 'home' %}" class="text-indigo-600 hover:underline">Inicia sesión</a>

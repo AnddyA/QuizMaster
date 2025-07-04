@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Student, Quiz, Question, QuizAnswer, Category, Group, Option 
+from .models import User, Quiz, Question, QuizAnswer, Category, Group, Option 
 
 # Register your models here.
-admin.site.register(Student)
+admin.site.register(User)
 admin.site.register(Quiz)
 admin.site.register(Question)
 admin.site.register(QuizAnswer)

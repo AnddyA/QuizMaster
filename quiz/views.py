@@ -8,37 +8,53 @@ import random
 from datetime import datetime
 from django.utils.timezone import now
 from django.db.models import F, Max, Min
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 
 def home(request):
+    formL = StudentLoginForm()
+    formR = StudentRegisterForm()
+
     if request.method == 'POST':
-        formL = StudentLoginForm(request.POST)
-        formR = StudentRegisterForm(request.POST)
+        action = request.POST.get("action")
 
-        if formR.is_valid():
-            dni = formR.cleaned_data['dni']
-            if Student.objects.filter(dni=dni).exists():
-                messages.error(request, 'Ya existe un estudiante con esa cédula.')
+        if action == "register":
+            formR = StudentRegisterForm(request.POST)
+            if formR.is_valid():
+                dni = formR.cleaned_data['dni']
+                if User.objects.filter(dni=dni).exists():
+                    messages.error(request, 'Ya existe un estudiante con esa cédula.')
+                    formR = StudentRegisterForm()  # Reset form
+                else:
+                    formR.save()
+                    messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+
             else:
-                formR.save()
-                messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
-                return redirect('home')
-            
-        elif formL.is_valid():
-            dni = formL.cleaned_data['dni']
-            try:
-                student = Student.objects.get(dni=dni)
-                request.session['student_id'] = student.id  # Inicia sesión
-                return redirect('dashboard_student')
-            except Student.DoesNotExist:
-                messages.error(request, 'Cédula no encontrada.')
-    else:
-        formL = StudentLoginForm()
-        formR = StudentRegisterForm()
-    
-    return render(request, 'home.html', {'now': now(), 'formL': formL, 'formR': formR})
+                messages.error(request, 'Ya existe un estudiante con esa cédula o completa correctamente el formulario de registro.')
+                formR = StudentRegisterForm()  # Reset form
+
+        elif action == "login":
+            formL = StudentLoginForm(request.POST)
+            if formL.is_valid():
+                dni = formL.cleaned_data['dni']
+                try:
+                    student = User.objects.get(dni=dni)
+                    request.session['student_id'] = student.id
+                    return redirect('dashboard_student')
+                except User.DoesNotExist:
+                    messages.error(request, 'Cédula no encontrada.')
+                    formL = StudentLoginForm()  # Reset form
+            else:
+                messages.error(request, 'Completa correctamente el formulario de inicio de sesión.')
+
+    return render(request, 'home.html', {
+        'formL': formL,
+        'formR': formR,
+        'now': now()
+    })
 
 
-#def register_student(request):
+#def register_student(request, formR):
 #    if request.method == 'POST':
 #        formR = StudentRegisterForm(request.POST)
 #        if formR.is_valid():
@@ -78,7 +94,7 @@ def dashboard_student(request):
     if not student_id:
         return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
     return render(request, 'dashboard.html', {'student': student})
 
 
@@ -87,7 +103,7 @@ def create_group(request):
     if not student_id:
         return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
     
     if student.group_set.exists():
         messages.error(request, 'Ya perteneces a un grupo.')
@@ -109,9 +125,9 @@ def create_group(request):
 def join_group(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
 
     if student.group_set.exists():
         messages.error(request, 'Ya perteneces a un grupo.')
@@ -141,9 +157,9 @@ def join_group(request):
 def leave_group(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
     groups = student.group_set.all()
 
     if groups.exists():
@@ -165,9 +181,9 @@ def leave_group(request):
 def start_quiz(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
     groups = student.group_set.all()
 
     if not groups.exists():
@@ -202,7 +218,7 @@ def quiz_question(request):
     index = request.session.get('current_index', 0)
 
     student_id = request.session.get('student_id')
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
 
     if quiz_id is None or index >= len(question_ids):
         return redirect('quiz_result')
@@ -251,7 +267,7 @@ def quiz_question(request):
 def quiz_result(request):
     quiz_id = request.session.get('quiz_id')
     student_id = request.session.get('student_id')
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
 
     if quiz_id is None:
         return redirect('dashboard_student')
@@ -323,12 +339,22 @@ def create_question(request):
 def profile(request):
     student_id = request.session.get('student_id')
     if not student_id:
-        return redirect('login_student')
+        return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=student)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=student)
 
     return render(request, 'profile.html', {
-        'student': student
+        'student': student,
+        'form': form
     })
 
 def group_history(request):
@@ -336,7 +362,7 @@ def group_history(request):
     if not student_id:
         return redirect('home')
 
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
     group = student.group_set.first()
 
     if not group:
@@ -363,7 +389,7 @@ def group_rankings(request):
     student_id = request.session.get('student_id')
     if not student_id:
         return redirect('home')
-    student = Student.objects.get(id=student_id)
+    student = User.objects.get(id=student_id)
 
     # sacar todos los grupos que alguna vez han jugado
     group_ids = Quiz.objects.values_list('group', flat=True).distinct()
@@ -409,3 +435,35 @@ def group_rankings(request):
         'rankings': data,
         'student': student
     })
+
+
+def manage_groups(request):
+    user_id = request.session.get('student_id')  # asegúrate que usas user_id en el login
+    if not user_id:
+        return redirect('home')
+    
+    user = User.objects.get(id=user_id)
+    if user.role != 'admin':
+        messages.error(request, "No tienes permisos para acceder aquí.")
+        return redirect('home')
+    
+    groups = Group.objects.all()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        group_id = request.POST.get('group_id')
+
+        group = get_object_or_404(Group, id=group_id)
+
+        if action == 'rename':
+            new_name = request.POST.get('new_name')
+            if new_name:
+                group.name = new_name
+                group.save()
+                messages.success(request, "Grupo renombrado correctamente.")
+        elif action == 'delete':
+            group.delete()
+            messages.success(request, "Grupo eliminado correctamente.")
+        return redirect('manage_groups')
+    
+    return render(request, 'manage_groups.html', {'groups': groups, 'student': user})

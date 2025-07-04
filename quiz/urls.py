@@ -19,5 +19,6 @@ urlpatterns = [
     path('perfil/', views.profile, name='profile'),
     path('grupohistorial/', views.group_history, name='group_history'),
     path('rankings/', views.group_rankings, name='group_rankings'),
+    path('lista_grupos/', views.manage_groups, name='manage_groups'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

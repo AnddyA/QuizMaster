@@ -8,4 +8,5 @@
     <p class="mb-2"><strong>Apellido:</strong> {{ student.last_name }}</p>
     <p><strong>Grupo:</strong> {% if student.group_set.first %}{{ student.group_set.first.name }}{% else %}Sin grupo{% endif %}</p>
   </div>
+ 
 {% endblock %}
